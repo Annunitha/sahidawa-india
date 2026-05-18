@@ -14,6 +14,7 @@ import {
     XCircle,
     AlertTriangle,
     Search,
+    X,
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { PageHeader } from "../components/PageHeader";
@@ -514,6 +515,15 @@ export default function ScanPage() {
 
                 {showResult && (
                     <div className="animate-in fade-in zoom-in absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm duration-300">
+                        <button
+                            onClick={() => {
+                                setShowResult(false);
+                                setVerifyError(null);
+                            }}
+                            className="absolute top-4 right-4 z-40 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                        >
+                            <X size={24} />
+                        </button>
                         {verifyError && (
                             <ErrorResult
                                 message={verifyError}
