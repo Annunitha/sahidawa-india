@@ -109,9 +109,12 @@ export default function SahiDawaHome() {
                             className="hidden items-center gap-6 text-sm font-semibold text-slate-600 lg:flex"
                             aria-label="Main navigation"
                         >
-                            <button className="transition-colors hover:text-emerald-600">
+                            <Link
+                                href="/how-it-works"
+                                className="transition-colors hover:text-emerald-600"
+                            >
                                 {tNav("how_it_works")}
-                            </button>
+                            </Link>
                             <Link
                                 href="/alerts"
                                 className="transition-colors hover:text-emerald-600"
