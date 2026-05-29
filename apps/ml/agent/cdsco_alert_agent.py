@@ -21,7 +21,7 @@ if not API_SECRET_KEY:
     logging.error("CRITICAL ERROR: API_SECRET_KEY is not set in environment.")
     sys.exit(1)
 
-PROCESSED_PDFS_FILE = os.path.join(os.path.dirname(__file__), "processed_pdfs.txt")
+ALERTS_API_URL = os.getenv("API_BASE_URL", "http://localhost:3000") + "/api/v1/alerts"
 
 def scrape_cdsco_alerts():
     logging.info(f"Checking {CDSCO_ALERTS_URL} for new alerts...")
@@ -48,14 +48,6 @@ def scrape_cdsco_alerts():
         
     recent_pdf = pdf_links[0]
     
-    # Deduplication check
-    if os.path.exists(PROCESSED_PDFS_FILE):
-        with open(PROCESSED_PDFS_FILE, "r") as f:
-            processed = f.read().splitlines()
-            if recent_pdf in processed:
-                logging.info(f"Skipping already processed PDF: {recent_pdf}")
-                return
-
     logging.info(f"Processing recent alert PDF: {recent_pdf}")
     process_alert_pdf(recent_pdf)
 
@@ -90,10 +82,37 @@ def process_alert_pdf(pdf_url: str):
         return
         
     logging.info(f"Extracted {len(alerts)} alerts. Sending to Ingest API...")
-    if ingest_alerts(alerts):
-        # Mark as processed if ingest succeeds
-        with open(PROCESSED_PDFS_FILE, "a") as f:
-            f.write(pdf_url + "\n")
+    
+    # Deduplicate against existing DB records
+    new_alerts = deduplicate_alerts(alerts)
+    if not new_alerts:
+        logging.info("All extracted alerts already exist in the database. Skipping ingest.")
+        return
+    
+    logging.info(f"{len(new_alerts)} new alert(s) to ingest after deduplication.")
+    ingest_alerts(new_alerts)
+
+def deduplicate_alerts(alerts: list) -> list:
+    """
+    Checks the drug_alerts table via the API and returns only alerts
+    whose batch_number does not already exist in the database.
+    This makes the agent stateless — safe for serverless or CI environments.
+    """
+    try:
+        response = requests.get(ALERTS_API_URL, params={"limit": 100}, timeout=10)
+        response.raise_for_status()
+        existing = response.json().get("data", [])
+        existing_batches = {a.get("batch_number") for a in existing if a.get("batch_number")}
+    except Exception as e:
+        logging.warning(f"Could not fetch existing alerts for deduplication: {e}. Proceeding without dedup.")
+        return alerts
+
+    new_alerts = [a for a in alerts if a.get("batch_number") not in existing_batches]
+    skipped = len(alerts) - len(new_alerts)
+    if skipped:
+        logging.info(f"Skipping {skipped} already-ingested alert(s).")
+    return new_alerts
+
 
 def ingest_alerts(alerts: list):
     headers = {

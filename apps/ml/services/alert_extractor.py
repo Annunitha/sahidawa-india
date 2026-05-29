@@ -14,13 +14,13 @@ except ImportError:
     logging.warning("LangChain or langchain-google-genai is not installed. Extractor will mock or fail if called.")
 
 class AlertInfo(BaseModel):
-    brand: str = Field(description="The brand name of the medicine")
-    batch: str = Field(description="The batch number or lot number")
+    reported_brand_name: str = Field(description="The brand name of the medicine")
+    batch_number: str = Field(description="The batch number or lot number")
     manufacturer: str = Field(description="The company that manufactured the medicine")
     alert_type: str = Field(description="The type of alert, e.g., 'NSQ', 'Spurious', 'Banned'")
-    reason: str = Field(description="The reason for the alert")
-    state_district: Optional[str] = Field(description="The state or district mentioned")
-    date: Optional[str] = Field(description="The date of the alert in YYYY-MM-DD if possible")
+    state: Optional[str] = Field(description="The state mentioned")
+    district: Optional[str] = Field(description="The district mentioned")
+    reported_at: Optional[str] = Field(description="The date of the alert in YYYY-MM-DD if possible")
 
 class AlertList(BaseModel):
     alerts: List[AlertInfo] = Field(description="List of alerts extracted from the text")

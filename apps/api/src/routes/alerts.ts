@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../db/client";
-import webpush from "web-push";
 import { z } from "zod";
+import { triggerRecallAlert } from "../services/notifications";
 
 if (!process.env.API_SECRET_KEY) {
     console.error("CRITICAL ERROR: API_SECRET_KEY is not set. Terminating.");
@@ -9,25 +9,18 @@ if (!process.env.API_SECRET_KEY) {
 }
 
 const AlertSchema = z.object({
-    brand: z.string().optional(),
-    batch: z.string().optional(),
+    reported_brand_name: z.string().optional(),
+    batch_number: z.string().optional(),
     manufacturer: z.string().optional(),
     alert_type: z.string().optional(),
-    reason: z.string().optional(),
-    state_district: z.string().optional(),
-    date: z.string().optional(),
+    state: z.string().optional(),
+    district: z.string().optional(),
+    reported_at: z.string().optional(),
 }).passthrough();
 
 const AlertsArraySchema = z.array(AlertSchema);
 
-// Configure web-push with VAPID details
-if (process.env.WEB_PUSH_VAPID_PUBLIC_KEY && process.env.WEB_PUSH_VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails(
-        process.env.WEB_PUSH_CONTACT || "mailto:support@sahidawa.in",
-        process.env.WEB_PUSH_VAPID_PUBLIC_KEY,
-        process.env.WEB_PUSH_VAPID_PRIVATE_KEY
-    );
-}
+
 
 
 const alertsRouter = Router();
@@ -63,10 +56,10 @@ alertsRouter.get("/", async (req: Request, res: Response) => {
     let query = supabase.from("drug_alerts").select("*", { count: "exact" });
     
     if (brand) {
-        query = query.ilike("brand", `%${brand}%`);
+        query = query.ilike("reported_brand_name", `%${brand}%`);
     }
     if (region) {
-        query = query.ilike("state_district", `%${region}%`);
+        query = query.ilike("state", `%${region}%`);
     }
 
     const { data, error, count } = await query
@@ -128,16 +121,16 @@ alertsRouter.post("/ingest", async (req: Request, res: Response) => {
 
         // 3. Update medicines table based on matched batches
         const updatePromises = validatedAlerts.map(alert => {
-            if (alert.batch) {
+            if (alert.batch_number) {
                 let q = supabase
                     .from("medicines")
                     .update({ status: "recalled", is_counterfeit_alert: true })
-                    .eq("batch_number", alert.batch);
+                    .eq("batch_number", alert.batch_number);
                 
                 if (alert.manufacturer) {
                     q = q.eq("manufacturer", alert.manufacturer);
-                } else if (alert.brand) {
-                    q = q.eq("brand_name", alert.brand);
+                } else if (alert.reported_brand_name) {
+                    q = q.eq("brand_name", alert.reported_brand_name);
                 }
                 return q;
             }
@@ -146,36 +139,20 @@ alertsRouter.post("/ingest", async (req: Request, res: Response) => {
         
         await Promise.all(updatePromises);
 
-        // 4. Dispatch Web Push Notifications
-        const { data: subscriptions, error: subError } = await supabase
-            .from("push_subscriptions")
-            .select("*");
-
-        if (!subError && subscriptions && subscriptions.length > 0) {
-            const pushPayload = JSON.stringify({
-                title: "New CDSCO Drug Alert",
-                body: `A new drug recall has been issued. Check the alerts page for details.`,
-                icon: "/icon.png", // Assuming an icon exists at this route
-                url: "/alerts"
-            });
-
-            const pushPromises = subscriptions.map((sub: any) => {
-                const pushSubscription = {
-                    endpoint: sub.endpoint,
-                    keys: {
-                        p256dh: sub.p256dh,
-                        auth: sub.auth
-                    }
-                };
-                return webpush.sendNotification(pushSubscription, pushPayload).catch(async err => {
-                    console.error("Error sending push notification to endpoint:", sub.endpoint, err);
-                    if (err.statusCode === 404 || err.statusCode === 410) {
-                        console.log("Removing dead subscription:", sub.endpoint);
-                        await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
-                    }
+        // 4. Dispatch Web Push Notifications using shared service
+        if (insertedAlerts && insertedAlerts.length > 0) {
+            const pushPromises = insertedAlerts.map(alert => {
+                return triggerRecallAlert({
+                    id: alert.id ? String(alert.id) : "unknown",
+                    medicineName: alert.reported_brand_name || "Unknown Medicine",
+                    batchNumber: alert.batch_number,
+                    manufacturer: alert.manufacturer,
+                    reason: `Alert of type ${alert.alert_type || "NSQ"} in ${alert.state || "Unknown region"}`,
+                    severity: "high",
+                    source: "CDSCO Live Feed",
+                    recalledAt: alert.reported_at || new Date().toISOString(),
                 });
             });
-
             await Promise.all(pushPromises);
         }
 

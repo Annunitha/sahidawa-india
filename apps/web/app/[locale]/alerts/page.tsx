@@ -157,7 +157,7 @@ export default function FullAlertsLogPage() {
                     </div>
                 ) : allAlerts.length > 0 ? (
                     allAlerts.map((alert) => {
-                        const isSystem = alert.brand_name === "SYSTEM_UPDATE" || alert.brand === "SYSTEM_UPDATE";
+                        const isSystem = alert.reported_brand_name === "SYSTEM_UPDATE" || alert.brand_name === "SYSTEM_UPDATE" || alert.brand === "SYSTEM_UPDATE";
                         const isCritical =
                             alert.cdsco_approval_status === "banned" || alert.is_counterfeit_alert || alert.alert_type === "Banned";
 
@@ -200,7 +200,7 @@ export default function FullAlertsLogPage() {
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                             <h4 className="leading-tight font-bold text-(--color-text-primary)">
-                                                {isSystem ? "System Update" : (alert.brand_name || alert.brand)}
+                                                {isSystem ? "System Update" : (alert.reported_brand_name || alert.brand_name || alert.brand)}
                                             </h4>
                                             {!isSystem && (
                                                 <span
@@ -215,12 +215,12 @@ export default function FullAlertsLogPage() {
                                             )}
                                         </div>
                                         <span className="shrink-0 text-[11px] font-medium text-(--color-text-muted)">
-                                            {formatRelativeTime(alert.created_at)}
+                                            {formatRelativeTime(alert.reported_at || alert.created_at)}
                                         </span>
                                     </div>
 
                                     <p className="mt-1 text-sm leading-snug font-medium text-(--color-text-secondary)">
-                                        {alert.composition || alert.reason}
+                                        {alert.alert_type ? `Alert: ${alert.alert_type}` : (alert.composition || "No details available")}
                                     </p>
 
                                     {/* Render metadata bottom line layout only if it's not a system update card */}
@@ -229,7 +229,7 @@ export default function FullAlertsLogPage() {
                                             <span>
                                                 Batch:{" "}
                                                 <span className="font-bold text-(--color-text-primary)">
-                                                    {alert.batch_number || alert.batch}
+                                                    {alert.batch_number}
                                                 </span>
                                             </span>
                                             <span>•</span>
@@ -239,13 +239,13 @@ export default function FullAlertsLogPage() {
                                                     {alert.manufacturer}
                                                 </span>
                                             </span>
-                                            {alert.state_district && (
+                                            {(alert.state || alert.district) && (
                                                 <>
                                                     <span>•</span>
                                                     <span>
                                                         Region:{" "}
                                                         <span className="font-bold text-(--color-text-primary)">
-                                                            {alert.state_district}
+                                                            {[alert.state, alert.district].filter(Boolean).join(", ")}
                                                         </span>
                                                     </span>
                                                 </>
