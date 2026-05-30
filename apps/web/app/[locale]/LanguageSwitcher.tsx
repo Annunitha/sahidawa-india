@@ -2,21 +2,21 @@
 
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/routing";
-import { Globe, ChevronDown } from "lucide-react";
+import { Globe, ChevronDown, Check } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 const languages = [
-  { code: "en", label: "English", native: "English" },
-  { code: "hi", label: "Hindi", native: "हिन्दी" },
-  { code: "ta", label: "Tamil", native: "தமிழ்" },
-  { code: "bn", label: "Bengali", native: "বাংলা" },
-  { code: "te", label: "Telugu", native: "తెలుగు" },
-  { code: "mr", label: "Marathi", native: "मराठी" },
-  { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
-  { code: "ur", label: "Urdu", native: "اردو" },
-  { code: "od", label: "Odia", native: "ଓଡ଼ିଆ" },
-  { code: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
-  { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ" }
+    { code: "en", label: "English", native: "English" },
+    { code: "hi", label: "Hindi", native: "हिन्दी" },
+    { code: "ta", label: "Tamil", native: "தமிழ்" },
+    { code: "bn", label: "Bengali", native: "বাংলা" },
+    { code: "te", label: "Telugu", native: "తెలుగు" },
+    { code: "mr", label: "Marathi", native: "मराठी" },
+    { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
+    { code: "ur", label: "Urdu", native: "اردو" },
+    { code: "od", label: "Odia", native: "ଓଡ଼ିଆ" },
+    { code: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
+    { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ" },
 ];
 
 export default function LanguageSwitcher() {
@@ -30,16 +30,8 @@ export default function LanguageSwitcher() {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
   // Focus management: when dropdown opens, select current language and focus listbox
   useEffect(() => {
@@ -101,7 +93,16 @@ export default function LanguageSwitcher() {
     }
   };
 
-  const current = languages.find((l) => l.code === locale) || languages[0];
+    // Close dropdown on Escape key
+    useEffect(() => {
+        function handleEscape(e: KeyboardEvent) {
+            if (e.key === "Escape") {
+                setOpen(false);
+            }
+        }
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, []);
 
   return (
     <div className="relative" ref={ref}>
@@ -159,7 +160,5 @@ export default function LanguageSwitcher() {
             );
           })}
         </div>
-      )}
-    </div>
-  );
+    );
 }
