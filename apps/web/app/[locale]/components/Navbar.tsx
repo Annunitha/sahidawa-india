@@ -35,7 +35,7 @@ export default function Navbar() {
     return (
         <>
             {/* ── Top Navigation ── */}
-            <header className="sticky top-0 z-50 w-full border-b border-white/30 bg-white/60 shadow-sm shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60">
+            <header className="sticky top-0 z-50 w-full border-b border-white/25 bg-white/70 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-white/10 dark:bg-slate-900/70 dark:shadow-[0_8px_24px_rgba(0,0,0,0.22)] dark:supports-[backdrop-filter]:bg-slate-900/60">
                 <div className="container mx-auto flex h-16 items-center gap-2 px-3 sm:gap-3 sm:px-4 md:px-6">
                     {/* Left — Logo */}
                     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -85,7 +85,7 @@ export default function Navbar() {
                     <div className="ml-auto flex shrink-0 items-center justify-end gap-1.5 sm:gap-3">
                         <button
                             onClick={() => handleNavigation("health")}
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-r from-blue-500 to-purple-500 text-white transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 sm:h-10 sm:w-10"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-r from-blue-500 to-purple-500 text-white transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 sm:h-10 sm:w-10"
                             aria-label={tHome("open_ai_health_assistant")}
                         >
                             <MessageCircle size={17} />
@@ -106,7 +106,7 @@ export default function Navbar() {
 
                         <button
                             onClick={() => handleNavigation("login")}
-                            className="hidden h-9 items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/50 px-4 py-1.5 text-sm font-bold text-emerald-700 transition-all duration-200 hover:scale-105 hover:border-emerald-500/50 hover:bg-emerald-100 sm:flex sm:h-10 sm:px-5 sm:py-2 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                            className="hidden h-9 items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/50 px-4 py-1.5 text-sm font-bold text-emerald-700 transition-all duration-200 hover:scale-105 hover:border-emerald-500/50 hover:bg-emerald-100 hover:shadow-sm sm:flex sm:h-10 sm:px-5 sm:py-2 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                             aria-label={tHome("sign_in")}
                         >
                             <User size={16} />
@@ -118,7 +118,7 @@ export default function Navbar() {
 
             {/* ── Mobile Bottom Navigation ── */}
             <nav
-                className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around border-t border-(--color-border-muted)/60 bg-(--color-surface-page)/90 px-2 py-3 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+                className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around border-t border-(--color-border-muted)/60 bg-(--color-surface-page)/92 px-2 py-3 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
                 aria-label="Mobile navigation"
             >
                 <Link
