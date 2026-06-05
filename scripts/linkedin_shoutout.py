@@ -118,17 +118,11 @@ def validate_linkedin_url(pr: dict) -> str:
         print("   Without a LinkedIn URL, we cannot properly tag/mention the contributor.")
         print("   Exiting gracefully without triggering Make.com webhook.")
         
-        # Post a friendly comment on the PR using gh cli
-        pr_number = pr.get("number")
-        if pr_number and pr_number != "N/A":
-            comment = (
-                f"🎉 Awesome work on getting your `{pr.get('labels', 'advanced')}` PR merged! "
-                f"We wanted to give you a LinkedIn shoutout, but couldn't find your LinkedIn Profile URL in the PR description.\n\n"
-                f"If you'd like a shoutout, please edit the PR description to include your LinkedIn URL (e.g. `https://linkedin.com/in/username`). "
-                f"Once you've done that, please ping a maintainer to re-trigger the shoutout!"
-            )
-            os.system(f'gh pr comment {pr_number} --body "{comment}"')
-            
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a") as f:
+                f.write("shoutout_status=skipped\n")
+        
         sys.exit(0)
     print(f"✅ Found LinkedIn URL: {linkedin_url}")
     return linkedin_url
@@ -280,6 +274,8 @@ def generate_post_with_gemini(pr: dict, tier_display: str, tier_desc: str) -> st
             raise KeyError(f"No content parts returned. finishReason: {finish_reason}")
             
         text = parts[0].get("text", "").strip()
+        
+        print("\n✅ Script completed successfully!")
         print("✅ Gemini post generated successfully.")
         return text
     except Exception as exc:
@@ -397,6 +393,13 @@ def main():
     print("─" * 60 + "\n")
 
     send_to_make_webhook(final_post, pr)
+    
+    # Final Output Step
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write("shoutout_status=published\n")
+            
     print("\n✅ Done!")
 
 

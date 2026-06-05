@@ -8,7 +8,7 @@ name: "🎉 LinkedIn Contributor Shoutout"
 # ─────────────────────────────────────────────────────────────────────────────
 on:
     pull_request_target:
-        types: [closed, labeled]
+        types: [closed, labeled, edited]
 
 # Write permission on pull-requests needed to post celebratory comment.
 permissions:
@@ -28,12 +28,14 @@ jobs:
         if: |
             github.event.pull_request.merged == true &&
             contains(github.event.pull_request.labels.*.name, 'shoutout:approved') &&
+            !contains(github.event.pull_request.labels.*.name, 'shoutout:published') &&
             (
               contains(github.event.pull_request.labels.*.name, 'level:advanced') ||
               contains(github.event.pull_request.labels.*.name, 'level:critical')
             ) &&
             (
               github.event.action == 'closed' ||
+              github.event.action == 'edited' ||
               (
                 github.event.action == 'labeled' &&
                 (
@@ -127,6 +129,7 @@ jobs:
             # All secrets are passed as env vars — the script never hardcodes them.
             # ─────────────────────────────────────────────────────────────────
             - name: "🚀 Generate & Post LinkedIn Shoutout"
+              id: shoutout
               env:
                   # Make.com Webhook URL (stored in GitHub Secrets)
                   MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
@@ -151,6 +154,7 @@ jobs:
             # (Same pattern as autocomment-pr-merge.yml — already in our stack)
             # ─────────────────────────────────────────────────────────────────
             - name: "💬 Post Celebratory PR Comment"
+              if: steps.shoutout.outputs.shoutout_status == 'published'
               uses: actions/github-script@v7
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -180,4 +184,12 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         body: message
+                      });
+                      
+                      // Add 'shoutout:published' label to prevent duplicate triggers
+                      await github.rest.issues.addLabels({
+                        issue_number: pr.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        labels: ['shoutout:published']
                       });
