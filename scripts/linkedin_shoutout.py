@@ -396,17 +396,8 @@ def send_to_make_webhook(post_text: str, pr: dict) -> None:
         clean_avatar = pr['author_avatar'].split('?')[0]
         cards_url += f"&image={urllib.parse.quote(clean_avatar, safe='')}"
         
-    raw_image_url = f"https://i.microlink.io/{urllib.parse.quote(cards_url, safe='')}"
-        
-    # Use TinyURL to bypass Make.com's strict/buggy URL validation and double-encoding
-    try:
-        req = urllib.request.Request(f"https://tinyurl.com/api-create.php?url={urllib.parse.quote(raw_image_url, safe='=&?/:%')}")
-        with urllib.request.urlopen(req) as response:
-            image_url = response.read().decode('utf-8')
-    except Exception as e:
-        print(f"Warning: TinyURL failed ({e}), using raw URL")
-        image_url = raw_image_url
-
+    image_url = f"https://i.microlink.io/{urllib.parse.quote(cards_url, safe='')}"
+    
     payload = {
         "post_text": post_text,
         "pr_title": pr["title"],
