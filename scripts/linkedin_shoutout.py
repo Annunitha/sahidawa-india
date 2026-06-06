@@ -457,8 +457,8 @@ def generate_and_upload_banner(pr: dict) -> str:
         base.paste(avatar_img, (100, 215), mask=avatar_img)
 
         # 4. Text Content (Right column, starting X = 360)
-        # GSSoC Badge Pill
-        badge_text = "⚡ GSSoC 2026 Star Contributor"
+        # GSSoC Badge Pill (Emoji-free)
+        badge_text = "GSSoC 2026 Star Contributor"
         try:
             bbox = draw.textbbox((0, 0), badge_text, font=font_badge)
             tw = bbox[2] - bbox[0]
@@ -474,14 +474,14 @@ def generate_and_upload_banner(pr: dict) -> str:
         draw.rounded_rectangle(
             [badge_x, badge_y, badge_x + badge_w, badge_y + badge_h],
             radius=badge_h // 2,
-            fill=(235, 122, 38, 40),
+            fill=(235, 122, 38, 255),  # Solid GSSoC orange background
             outline=(235, 122, 38, 255),
             width=2
         )
-        draw.text((badge_x + badge_padding_x, badge_y + badge_padding_y - 2), badge_text, fill=(255, 165, 0, 255), font=font_badge)
+        draw.text((badge_x + badge_padding_x, badge_y + badge_padding_y - 2), badge_text, fill=(255, 255, 255, 255), font=font_badge)  # High-contrast white text
 
-        # Headline
-        headline_text = f"Huge thanks, @{pr['author']}! 🎉"
+        # Headline (Emoji-free)
+        headline_text = f"Huge thanks, @{pr['author']}!"
         draw.text((360, 195), headline_text, fill=(255, 255, 255, 255), font=font_title)
 
         # Body appreciation text
@@ -516,7 +516,7 @@ def generate_and_upload_banner(pr: dict) -> str:
             print(f"⚠️ SahiDawa logo render skipped: {le}")
 
         draw.text((360, 485), "SahiDawa / RatLoopz", fill=(255, 255, 255, 255), font=font_repo)
-        draw.text((360, 520), "India's open-source medicine safety platform 🇮🇳", fill=(150, 150, 170, 255), font=font_tagline)
+        draw.text((360, 520), "India's open-source medicine safety platform", fill=(150, 150, 170, 255), font=font_tagline)
 
         # Save buffer
         img_buffer = BytesIO()
