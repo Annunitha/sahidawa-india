@@ -556,6 +556,7 @@ export default function AnalyticsDashboard() {
                             monthlyTrend={monthlyTrend}
                             reportStatusDist={reportStatusDist}
                             topDistricts={topDistricts}
+                            cacheStatsCard={<CacheStatsCard />}
                         />
 
                         {/* Recent Activity */}

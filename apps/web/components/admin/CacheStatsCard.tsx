@@ -2,6 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { ADMIN_API_BASE } from "@/lib/adminApi";
+
+function getToken(): string {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("sb-access-token") ?? "";
+}
 
 // SSR-safe Recharts import — fixes hydration mismatch (issue #1303)
 const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false });
@@ -37,7 +43,16 @@ export default function CacheStatsCard() {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch("/api/admin/cache/stats");
+            const token = getToken();
+            const res = await fetch(`${ADMIN_API_BASE}/cache/stats`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (res.status === 401 || res.status === 403) {
+                setError("Unauthorized admin access");
+                return;
+            }
             const json = await res.json();
             if (json.success) setStats(json.data);
             else setError("Failed to load stats");
