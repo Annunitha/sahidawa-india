@@ -163,7 +163,7 @@ export default function SearchBar({ dark = false, onSearchChange }: SearchBarPro
                     .from("medicines")
                     .select("brand_name, batch_number")
                     .or(
-                        `brand_name.ilike.%${escapePostgrest(trimmed)}%,batch_number.ilike.%${escapePostgrest(trimmed)}%`
+                        `brand_name.ilike."%${escapePostgrest(trimmed)}%",batch_number.ilike."%${escapePostgrest(trimmed)}%"`
                     )
                     .abortSignal(controller.signal)
                     .limit(MAX_SUGGESTIONS);

@@ -112,7 +112,7 @@ async function resolveToGeneric(input: string): Promise<{ input: string; generic
                 .from("medicines")
                 .select("brand_name, generic_name")
                 .or(
-                    `id.eq.${escaped},brand_name.ilike.%${escapePostgrest(escaped)}%,generic_name.ilike.%${escapePostgrest(escaped)}%`
+                    `id.eq.${escaped},brand_name.ilike."%${escapePostgrest(escaped)}%",generic_name.ilike."%${escapePostgrest(escaped)}%"`
                 )
                 .limit(1)
                 .maybeSingle();
@@ -257,7 +257,7 @@ router.post("/check", async (req: Request, res: Response) => {
                             .from("drug_interactions")
                             .select("*")
                             .or(
-                                `and(drug_a_id.eq.${escapePostgrest(a)},drug_b_id.eq.${escapePostgrest(b)}),and(drug_a_id.eq.${escapePostgrest(b)},drug_b_id.eq.${escapePostgrest(a)})`
+                                `and(drug_a_id.eq.${a},drug_b_id.eq.${b}),and(drug_a_id.eq.${b},drug_b_id.eq.${a})`
                             )
                             .maybeSingle();
 

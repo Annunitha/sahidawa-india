@@ -277,7 +277,7 @@ export async function retrieveRelevantMedicines(
             "id, brand_name, generic_name, manufacturer, composition, strength, dosage_form, schedule, mrp, jan_aushadhi_price"
         )
         .or(
-            `generic_name.ilike.${escapePostgrest(pattern)},brand_name.ilike.${escapePostgrest(pattern)},composition.ilike.${escapePostgrest(pattern)}`
+            `generic_name.ilike."${escapePostgrest(pattern)}",brand_name.ilike."${escapePostgrest(pattern)}",composition.ilike."${escapePostgrest(pattern)}"`
         )
         .limit(limit);
 

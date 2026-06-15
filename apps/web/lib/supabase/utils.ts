@@ -4,9 +4,9 @@
  * PostgreSQL ILIKE wildcard characters (% and _).
  */
 export function escapePostgrest(val: string): string {
-    return `"${val
+    return val
         .replace(/\\/g, "\\\\")
         .replace(/%/g, "\\%")
         .replace(/_/g, "\\_")
-        .replace(/"/g, '\\"')}"`;
+        .replace(/"/g, '""');
 }

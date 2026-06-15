@@ -12,9 +12,5 @@ export function escapeIlike(word: string): string {
  * Wraps in double quotes to prevent comma injection.
  */
 export function escapePostgrest(val: string): string {
-    return `"${val
-        .replace(/\\/g, "\\\\")
-        .replace(/%/g, "\\%")
-        .replace(/_/g, "\\_")
-        .replace(/"/g, '\\"')}"`;
+    return val.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_").replace(/"/g, '""');
 }
